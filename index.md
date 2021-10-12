@@ -1,9 +1,15 @@
 Put USB flashdrive with archlinux-2021.10.01-x86_64.iso
+
 VMWare Workstation -> new VM -> Linux OS -> Other Linux 5.x and later kernel 64-bit
+
 Default configurations except 2GB Ram and 20GB HDD
+
 Added firmware="efi" to ArchLinux.vmx file
+
 Used # ls /sys/firmware/efi/efivars and confirmed it booted in UEFI mode
+
 Used # ip link and confirmed ens33 showed up
+
 Entered iwctl
 
 
