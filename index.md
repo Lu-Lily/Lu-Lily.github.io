@@ -1,17 +1,11 @@
 # Pre-Installation
 
 ## Installation image and medium setup
-Put USB flashdrive with archlinux-2021.10.01-x86_64.iso
 
-VMWare Workstation -> new VM -> Typical -> Installer disc image file (iso): archlinux-2021.10.01-x86_64.iso -> Linux OS -> Other Linux 5.x and later kernel 64-bit
-
-VM Name: ArchLinux
-
-Default configurations except 2GB Ram and 20GB HDD
-
-ArchLinux -> Open VM Directory -> Edit ArchLinux.vmx
-
-Added firmware="efi" to ArchLinux.vmx file
+To begin, prepare a USB flashdrive with archlinux-2021.10.01-x86_64.iso. Next, open VMWare Workstation and create a new VM with typical settings, Choose the installer disc image file (iso): archlinux-2021.10.01-x86_64.iso, Linux OS, and Other Linux 5.x and later kernel 64-bit. Name the VM "ArchLinux". Continue the setup with default configurations except 2GB of RAM and 20GB HDD. Next, right click on the ArchLinux VM and open the VM directory, then edit the ArchLinux.vmx file. Add the following line to the end of the file:
+```
+firmware="efi"
+```
 
 ## Boot the live environment and verify boot mode
 
