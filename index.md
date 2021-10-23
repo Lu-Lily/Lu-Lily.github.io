@@ -9,202 +9,385 @@ firmware="efi"
 
 ## Boot the live environment and verify boot mode
 
-Power on -> Arch Linux install medium (x86_64, UEFI)
+Power on the VM and hit "Enter" on Arch Linux install medium (x86_64, UEFI). Once the terminal prompt comes up, enter the following command.
 
-Used # ls /sys/firmware/efi/efivars and confirmed it booted in UEFI mode since the command ran with no errors
+```
+# ls /sys/firmware/efi/efivars
+```
+
+If the command runs with no errors, the VM successfully booted in UEFI mode.
 
 ## Connect to the internet
 
-Used # ip link and confirmed ens33  (eth0) showed up -> rfkill list: not blocked
+First ensure that the network interface is listed and enabled:
 
-Did not need to set up wireless with iwctl
+```
+# ip link
+```
 
-DHCP -> systemctl start dhcpcd@ens33.service -> systemctl enable dhcpcd@ens33.service -> ping archlinux.org: working
+The results should show ens33 for ethernet. Next, configure the network connection with DHCP using the following commands.
+
+```
+# systemctl start dhcpcd@ens33.service
+# systemctl enable dhcpcd@ens33.service
+```
+Test that the connection is working:
+
+```
+# ping archlinux.org
+```
 
 ## Update the system clock
 
-Used timedatectl set-ntp true -> checked timedatectl status -> checked timedatectl list-timezones -> entered timedatectl set-timezone America/Chicago
+Ensure the system clock is accurate:
+
+```
+# timedatectl set-ntp true
+# timedatectl status
+```
+
+Set the time zone:
+
+```
+# timedatectl set-timezone America/Chicago
+```
 
 ## Partition the disks
 
-fdisk -l -> fdisk /dev/sda -> p -> Disklabel type: dos -> MBR
+Next, we need to partition disks for booting in UEFI mode (EFI system partition), and a partition for root. To begin, we will identify the block devices on the system.
 
-sgdisk -g /dev/sda -> convert MBR to GPT
+```
+# fdisk -l
+```
 
-No partitions -> fdisk /dev/sda: create new using n command -> default settings -> +512M -> t -> new partition -> change type to EFI System (code 1) -> n -> defaults -> w
+The command shows /dev/sda exists as a block device. Now try
+
+```
+# fdisk /dev/sda
+```
+
+Now enter the `p` command to see that the "Disklabel type" is listed as dos, meaning the disk's partition table is MBR (Master Boot Record). We can convert the partition table to GPT (GUID Partition Table) using the following command:
+
+```
+# sgdisk -g /dev/sda
+```
+
+Now we will create the partitions. Enter
+
+```
+# fdisk /dev/sda
+```
+
+Then create a new partition using the `n` command. Follow the default settings, then set the last sector to +512M. Now use the `t` command and select the new partition. Change the partition type to EFI System (code 1). Now for the boot drive, enter `n` again and follow all default settings. Finally, enter the `n` command to write and exit `fdisk`.
 
 ## Format the partitions
 
-Format partition -> # mkfs.fat -F32 /dev/sda1 -> mkfs.ext4 /dev/sda2
+To format partition the EFI system partition, enter the following command:
+
+```
+# mkfs.fat -F32 /dev/sda1
+```
+
+To format the root partition, enter the following command:
+
+```
+# mkfs.ext4 /dev/sda2
+```
 
 ## Mount the partitions/filesystems
 
-Mount partition -> mount /dev/sda2 /mnt
+Mount the root partition:
+
+```
+# mount /dev/sda2 /mnt
+```
 
 # Installation
 
 ## Select the mirrors
 
-Select mirror -> reflector --verbose -c US -l 10 -p https -f 10 --save /etc/pacman.d/mirrorlist ->
+To select suitable mirrors, we will use `reflector` like so:
+
+```
+# reflector --verbose -c US -l 10 -p https -f 10 --save /etc/pacman.d/mirrorlist
+```
+
+This will show a verbose listing of the fastest 10 most recently synchronized https mirrors and overwrites the mirrorlist.
 
 ## Install essential packages
 
-pacstrap /mnt base linux linux-firmware vim nano
+To install the essential packages, run:
+
+```
+# pacstrap /mnt base linux linux-firmware vim nano
+```
+
+Any other packages can be appended onto the end if needed.
 
 # Configure the System
 
 ## Fstab
 
-Configure the system -> Generate fstab file: # genfstab -U /mnt >> /mnt/etc/fstab -> 
+Generate fstab file: 
+
+```
+# genfstab -U /mnt >> /mnt/etc/fstab
+```
 
 ## Chroot
 
-Change root into new system: # arch-chroot /mnt ->
+Change root into the new system:
 
-## Timezone
+```
+# arch-chroot /mnt
+```
 
-Timezone: # ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime -> generate /etc/adjtime: # hwclock --systohc -->
+## Time zone
+
+Set the time zone:
+
+```
+# ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
+```
+
+Now generate `/etc/adjtime`: 
+
+```
+# hwclock --systohc
+```
 
 ## Localization
 
-Localization: nano /etc/locale.gen -> uncomment en_US.UTF-8 UTF-8 -> save -> generate locales # locale-gen -> create locale.conf and set LANG variable: echo LANG=en_US.UTF-8 > /etc/locale.conf
+Edit `/etc/locale.gen` and uncomment `en_US.UTF-8 UTF-8`. Generate the locales with:
+
+```
+# locale-gen
+```
+
+Create the `locale.conf` file and set the `LANG` variable:
+
+```
+# echo LANG=en_US.UTF-8 > /etc/locale.conf
+```
 
 ## Network configuration
 
-Network configuration -> create hostname file: echo archlinux > /etc/hostname -> add matching files to hosts: touch /etc/hosts -> 
+Create the hostname file: 
 
-127.0.0.1	localhost
-::1		localhost
-127.0.1.1	myhostname
+```
+# echo archlinux > /etc/hostname
+```
+Configure the hosts file and add the following:
 
-systemctl enable dhcpd@ens33.service
+```
+127.0.0.1        localhost
+::1              localhost
+127.0.1.1        archlinux
+```
 
-systemctl enable systemd-networkd.service
+Enable DHCP:
+
+```
+# systemctl enable dhcpd@ens33.service
+```
+
+Enable the network manager:
+
+```
+# systemctl enable systemd-networkd.service
+```
 
 ## Set root password
 
-Set root password -> passwd -> enter password
+Set root password:
 
-## Install bootloader
+```
+# passwd
+```
 
-create directory for EFI partition: mkdir /efi -> mount /dev/sda1 /efi
+Now enter any password desired.
 
-Install bootloader -> pacman -S grub -> pacman -S efibootmgr -> 
+## Install boot loader
 
-create directory for EFI partition: mkdir /efi -> mount /dev/sda1 /efi
+Install the boot loader (GRUB) and `efibootmgr`:
 
-install GRUB: grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB-> grub-mkconfig -o /boot/grub/grub.cfg
+```
+# pacman -S grub
+# pacman -S efibootmgr
+```
+
+Next, create a directory for the EFI partition and mount it:
+
+```
+# mkdir /efi
+# mount /dev/sda1 /efi
+```
+
+Finally, execute the following commands to install GRUB and generate the configuration file:
+
+```
+# grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+# grub-mkconfig -o /boot/grub/grub.cfg
+```
 
 # Reboot
 
-Exit chroot: exit -> reboot
+Exit chroot with `exit` and restart the machine with `reboot`.
 
 # Post-installation
 
-Login in to root ->
+Now we need to login into the new system with the root account.
 
 ## Install GUI
 
 ### Display server
 
-Install GNOME desktop environment: xorg: pacman -S xorg-server
+We need a display server in order to setup the GUI:
+
+```
+# pacman -S xorg-server
+```
 
 ### Desktop Environment
 
--> pacman -S gnome -> systemctl start gdm.service
+Now we will install GNOME as our desktop environment:
+
+```
+# pacman -S gnome
+```
+
+To start our new desktop environment, execute:
+
+```
+# systemctl start gdm.service
+```
 
 ## System administration
 
-Log back in as root -> change display settings to 2560 x 1600
-
-add sudo --> open terminal -> pacman -Syu sudo
-### Users and groups
+Log back in as root.
 
 ### User management
-Create a user account for yourself, sal, and codi with sudo permissions. The user names shall be "sal" and "codi" and the password shall be "GraceHopper1906" and be set to be changed after login.
 
-Create user accounts: useradd -m -G wheel -s login_shell lily -> useradd -m -G wheel -s login_shell sal -> useradd -m -G wheel -s login_shell codi
+We want to add sudo permissions. Open the terminal and install sudo:
 
-Add sudo permissions: export EDITOR=nano -> visudo -> uncomment  %wheel   ALL=(ALL)   ALL
+```
+# pacman -Syu sudo
+```
 
-Change passwords: passwd lily -> GraceHopper1906 -> passwd sal -> GraceHopper1906 passwd codi -> GraceHopper1906
+Next I will create a user account for myself, sal, and codi with sudo permissions. First we begin by creating the user accounts:
 
-Require passwords to be changed after login: mark passwords as expired: chage -d 0 lily -> chage -d 0 sal -> chage -d 0 codi
+```
+# useradd -m -G wheel -s /bin/bash lily
+# useradd -m -G wheel -s /bin/bash sal
+# useradd -m -G wheel -s /bin/bash codi
+```
+
+This creates the accounts `lily`, `sal`, and `codi` as members of the `wheel` group. We will add sudo permissions to the accounts with the following steps. We will set our default editor to nano:
+
+```
+# export EDITOR=nano
+```
+
+Next we will edit `/etc/sudoers` using
+
+```
+# visudo
+```
+
+We will then uncomment `%wheel   ALL=(ALL)   ALL` and save it, thus granting all members of the `wheel` group sudo permissions.
+
+To set the passwords of the accounts to `GraceHopper1906` we will run
+
+```
+# passwd lily
+# passwd sal
+# passwd codi
+```
+
+one by one and set the passwords as desired. To require the passwords to be changed after login, we will mark the passwords as expired:
+
+```
+#chage -d 0 lily
+# chage -d 0 sal
+# chage -d 0 codi
+```
 
 ## Console improvements
 
 ### Alternative shell
- Install a different shell other than bash, such as zsh or fish.
- 
- pacman -S zsh
- 
- Log out of root -> log into user account -> change password
- 
- Go to terminal -> zsh -> go through zsh-newuser-install -> recommended default settings -> save
- 
- Change default shell to zsh -> chsh -s /usr/bin/zsh -> log out and back in
- 
- ### Install SSH
- 
- open terminal -> sudo pacman -S openssh
- 
- ssh into gateway -> ssh -p 53997 lil0722@129.244.245.21 -> continue connecting -> enter password -> connected to cognizant
- 
- ### Add color coding
- 
- sudo pacman -S zsh-syntax-highlighting -> sudo pacman -S zsh-autosuggestions -> sudo nano ~/.zshrc -> add 
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 
--> source ~/.zshrc
- 
- ## Set the system to boot into the GUI desktop environment.
- 
-  -> systemctl enable gdm.service
-  
- ## Add a few aliases to .bashrc or .zshrc.
- 
- alias ls='ls --color=auto'
-alias c='clear'
-alias grep='grep --color=auto'
-alias ping='ping -c 5'
+We will install zsh as an alternative shell:
 
-
--------------------------
-## Welcome to GitHub Pages
-
-You can use the [editor on GitHub](https://github.com/Lu-Lily/Lu-Lily.github.io/edit/main/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```
+# pacman -S zsh
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+Now we will log out of root and into our user account where we will be prompted to change the password. After doing so, we will go to the terminal, enter
 
-### Jekyll Themes
+```
+# zsh
+```
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Lu-Lily/Lu-Lily.github.io/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+and then go through `zsh-newuser-install`. We will keep to the recommended default settings and save. To change the default shell to zsh, we run:
 
-### Support or Contact
+```
+# chsh -s /usr/bin/zsh
+```
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+Then we will log out and log back in.
+ 
+### Install SSH
+
+To install SSH, we will open the terminal and execute the following command:
+
+```
+# sudo pacman -S openssh
+```
+
+Once installed, we SSH into the gateway with:
+
+```
+# ssh -p 53997 lil0722@129.244.245.21
+```
+ 
+### Add color coding
+
+To add syntax highlighting to zsh, we execute the following:
+
+```
+# sudo pacman -S zsh-syntax-highlighting
+# sudo pacman -S zsh-autosuggestions
+# sudo nano ~/.zshrc
+```
+
+Next we add the following to `~/.zshrc`:
+
+```
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+```
+
+Next, source zsh with:
+
+```
+# source ~/.zshrc
+```
+ 
+## Set the system to boot into the GUI desktop environment.
+
+To set the system to boot into the GUI desktop enviroment, we execute this command:
+
+```
+# systemctl enable gdm.service
+```
+  
+## Add a few aliases to .bashrc or .zshrc.
+
+We use the `alias` command to add aliases. These are some aliases for zsh:
+
+```
+# alias ls='ls --color=auto'
+# alias c='clear'
+# alias grep='grep --color=auto'
+# alias ping='ping -c 5'
+```
