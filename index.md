@@ -148,19 +148,21 @@ Require passwords to be changed after login: mark passwords as expired: chage -d
  
  Go to terminal -> zsh -> go through zsh-newuser-install -> recommended default settings -> save
  
+ Change default shell to zsh -> chsh -s /usr/bin/zsh -> log out and back in
+ 
  ### Install SSH
  
- sudo pacman -S openssh
+ open terminal -> sudo pacman -S openssh
  
  ssh into gateway -> ssh -p 53997 lil0722@129.244.245.21 -> continue connecting -> enter password -> connected to cognizant
  
  ### Add color coding
  
- sudo nano /etc/nanorc
- 
- uncomment # include "/usr/share/nano/*.nanorc"
- 
- sudo pacman -S nano-syntax-highlighting ->  sudo nano /etc/nanorc -> add include "/usr/share/nano-syntax-highlighting/*.nanorc"
+ sudo pacman -S zsh-syntax-highlighting -> sudo pacman -S zsh-autosuggestions -> sudo nano ~/.zshrc -> add 
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+-> source ~/.zshrc
  
  ## Set the system to boot into the GUI desktop environment.
  
@@ -168,6 +170,7 @@ Require passwords to be changed after login: mark passwords as expired: chage -d
   
  ## Add a few aliases to .bashrc or .zshrc.
  
+ alias ls='ls --color=auto'
 alias c='clear'
 alias grep='grep --color=auto'
 alias ping='ping -c 5'
