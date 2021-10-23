@@ -383,7 +383,7 @@ To set the system to boot into the GUI desktop enviroment, we execute this comma
   
 ## Add a few aliases to .bashrc or .zshrc.
 
-We use the `alias` command to add aliases. These are some aliases for zsh:
+Add the following lines to ~/.zshrc:
 
 ```
 # alias ls='ls --color=auto'
@@ -391,6 +391,8 @@ We use the `alias` command to add aliases. These are some aliases for zsh:
 # alias grep='grep --color=auto'
 # alias ping='ping -c 5'
 ```
+
+Then `source ~/.zshrc`.
 
 ## Additional: Add a browser:
 
