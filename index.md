@@ -391,3 +391,11 @@ We use the `alias` command to add aliases. These are some aliases for zsh:
 # alias grep='grep --color=auto'
 # alias ping='ping -c 5'
 ```
+
+## Additional: Add a browser:
+
+Install firefox:
+
+```
+# sudo pacman -S firefox
+```
