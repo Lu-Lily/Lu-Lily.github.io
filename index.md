@@ -1,3 +1,5 @@
+[Arch Linux Installation Documentation](ArchLinux.md)
+
 # Pre-Installation
 
 ## Installation image and medium setup
