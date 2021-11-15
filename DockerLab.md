@@ -59,3 +59,4 @@ http://localhost/admin/
 
 Settings -> Network -> IPv4 -> manual DNS -> pihole IP
 
+![Screenshot](2021-11-14 22_46_32.png)
