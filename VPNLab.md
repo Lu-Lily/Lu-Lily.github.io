@@ -112,3 +112,20 @@ I found my SERVERURL (aka server IP address) on the DigitalOcean dashboard as `1
 I have a pc, a laptop, and a phone, so I changed the PEERS field to `PEERS=pc1, laptop1, phone1`.
 
 Now hit `CTRL` + `X`, `Y`, `ENTER` to save and exit the file.
+
+Start Wireguard:
+
+```
+cd ~/wireguard/
+docker-compose up -d
+```
+
+Connect your phone to Wireguard
+
+```
+docker-compose logs -f wireguard
+```
+
+Shows execution log and QR codes of Wireguard VPN connection settings.
+
+On iOS: open app store and download WireGuard app. Open Wireguard VPN connection application on phone and click on `Add a tunnel`, then `Create from QR code`. I used the phone1 QR code. Check IP address with IPLeak.net. Activate the VPN, then refresh the page.
