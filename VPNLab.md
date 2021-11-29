@@ -141,8 +141,8 @@ docker-compose logs -f wireguard
 Now, open the Wireguard VPN connection application and click on `Add a tunnel`, then `Create from QR code`. I scanned the phone1 QR code. Next, I checked the IP address using IPLeak.net. Then I activated the VPN on the Wireguard app, and refreshed the page:
 
 <p align="middle">
-  <img src="https://user-images.githubusercontent.com/56270862/143801491-5a0b647d-baa8-450d-888c-1b94f4b54827.png" width="450" />
-  <img src="https://user-images.githubusercontent.com/56270862/143801563-c571b166-16cd-4289-8f21-1cc6895b1519.png" width="450" /> 
+  <img src="https://user-images.githubusercontent.com/56270862/143801491-5a0b647d-baa8-450d-888c-1b94f4b54827.png" width="350" />
+  <img src="https://user-images.githubusercontent.com/56270862/143801563-c571b166-16cd-4289-8f21-1cc6895b1519.png" width="350" /> 
 </p>
 
 #### Connect your laptop to Wireguard
