@@ -2,15 +2,26 @@
 
 ## Create DigitalOcean account
 
+First, go to https://www.digitalocean.com/ to sign up for an account.
+
 ## Create Ubuntu 20.04 Droplet: 
 
-Get started with a droplet -> Ubuntu 20.04 -> Basic -> Regular Intel with SSD -> $5/mo -> went with New York datacenter 3 -> VPC Network: default-nyc3 -> no additional addons -> password: used generated password -> hostname: ubuntu-wireguard-vpn-docker
+Once the account has been created, click on  `Get started with a droplet`. Next, select the following options:\
+Ubuntu 20.04\
+Basic\
+Regular Intel with SSD\
+$5/mo\
+New York datacenter 3 (or any other datacenter)\
+VPC Network: default-nyc3\
+no additional addons\
+password: I used generated password\
+hostname: I chose to use `ubuntu-wireguard-vpn-docker`
 
 ## Install Docker
 
-Go to droplet console, then install docker.
+Go to the droplet console on DigitalOcean's dashboard, then install docker via the following steps:
 
-Install necessary tools:
+Install the necessary tools:
 
 ```
 sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
@@ -24,7 +35,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 Add docker repo:
 
-Running Ubuntu 20.04 (LTS) x64 so use 64bit OS repo:
+My droplet is running Ubuntu 20.04 (LTS) x64 so I use the 64bit OS repo:
 
 ```
 sudo add-apt-repository \
@@ -61,7 +72,7 @@ Done!
 
 ## Install Wireguard
 
-Run these:
+### Begin by creating the wireguard directory and the `docker-compose.yml` file:
 
 ```
 mkdir -p ~/wireguard/
@@ -103,42 +114,49 @@ services:
       - net.ipv4.conf.all.src_valid_mark=1
 ```
 
-Modify the TZ, SERVERURL, and PEERS fields.
-
+Modify the TZ, SERVERURL, and PEERS fields as needed.\
 I used `TZ=America/Chicago`.
-
-I found my SERVERURL (aka server IP address) on the DigitalOcean dashboard as `159.65.41.24` and thus used `SERVERURL=159.65.41.24`.
-
-I have a pc, a laptop, and a phone, so I changed the PEERS field to `PEERS=pc1, laptop1, phone1`.
+I found my SERVERURL (aka server IP address) on the DigitalOcean dashboard as `159.65.41.24` and thus used `SERVERURL=159.65.41.24`.\
+I have a pc, a laptop, and a phone, so I changed the PEERS field to `PEERS=pc1, laptop1, phone1`.\
 
 Now hit `CTRL` + `X`, `Y`, `ENTER` to save and exit the file.
 
-Start Wireguard:
+### Start Wireguard:
 
 ```
 cd ~/wireguard/
 docker-compose up -d
 ```
 
-Connect your phone to Wireguard
+#### Connect your phone to Wireguard
+
+To begin, since I use iOS, I had to download the WireGuard app from the appstore. 
+
+Use the following command to show the execution log and QR codes of the Wireguard VPN connection settings:
 
 ```
 docker-compose logs -f wireguard
 ```
 
-Shows execution log and QR codes of Wireguard VPN connection settings.
+Now, open the Wireguard VPN connection application and click on `Add a tunnel`, then `Create from QR code`. I scanned the phone1 QR code. Next, I checked the IP address using IPLeak.net. Then I activated the VPN on the Wireguard app, and refreshed the page:
 
-On iOS: open app store and download WireGuard app. Open Wireguard VPN connection application on phone and click on `Add a tunnel`, then `Create from QR code`. I used the phone1 QR code. Check IP address with IPLeak.net. Activate the VPN, then refresh the page.
+<p align="middle">
+  <img src="https://user-images.githubusercontent.com/56270862/143801491-5a0b647d-baa8-450d-888c-1b94f4b54827.png" width="450" />
+  <img src="https://user-images.githubusercontent.com/56270862/143801563-c571b166-16cd-4289-8f21-1cc6895b1519.png" width="450" /> 
+</p>
 
-On laptop: Windows: download windows installer from wireguard website
+#### Connect your laptop to Wireguard
 
-Go to `~/wireguard/configs/{username}`. For me, I went to `~/wireguard/configs/peer_laptop1`.
+Since I use a Windows laptop, I navigated to the Wireguard website and downloaded Wireguard from the windows installer.
 
-Next I need to read and copy the `.conf` file contents:
+Next, on the DigitalOcean droplet console, cd into `~/wireguard/configs/{username}`. For me, that was `~/wireguard/configs/peer_laptop1`.
+
+Next read and copy the `.conf` file contents:
 
 ```
 cat peer_laptop1.conf
 ```
+
 This showed the following contents:
 
 ```
@@ -157,3 +175,6 @@ AllowedIPs = 0.0.0.0/0, ::/0
 Create a `peer_laptop1.conf` file on the laptop being used, then open the Wireguard application and click `Import tunnel(s) from file`, then select the `.conf` file.
 
 Open up two windows on IPLeak.net. Let them load. Then, activate Wireguard and refresh one of the windows.
+
+![Laptop VPN test](https://user-images.githubusercontent.com/56270862/143802476-ad137df0-57b1-4ee6-8ecd-bc4223cd7294.png)
+
