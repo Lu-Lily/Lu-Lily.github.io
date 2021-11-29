@@ -129,3 +129,31 @@ docker-compose logs -f wireguard
 Shows execution log and QR codes of Wireguard VPN connection settings.
 
 On iOS: open app store and download WireGuard app. Open Wireguard VPN connection application on phone and click on `Add a tunnel`, then `Create from QR code`. I used the phone1 QR code. Check IP address with IPLeak.net. Activate the VPN, then refresh the page.
+
+On laptop: Windows: download windows installer from wireguard website
+
+Go to `~/wireguard/configs/{username}`. For me, I went to `~/wireguard/configs/peer_laptop1`.
+
+Next I need to read and copy the `.conf` file contents:
+
+```
+cat peer_laptop1.conf
+```
+This showed the following contents:
+
+```
+[Interface]
+Address = 10.0.0.3
+PrivateKey = KHtgPTTnoe4JWaPBEyn/ekXlhOjVhOkojRLc234nlGQ=
+ListenPort = 51820
+DNS = 10.0.0.1
+
+[Peer]
+PublicKey = 6bsvtnOhlxR0dY0q1sKQkqIZ6PSFsbNO47ue55IJdW0=
+Endpoint = 159.65.41.24:51820
+AllowedIPs = 0.0.0.0/0, ::/0
+```
+
+Create a `peer_laptop1.conf` file on the laptop being used, then open the Wireguard application and click `Import tunnel(s) from file`, then select the `.conf` file.
+
+Open up two windows on IPLeak.net. Let them load. Then, activate Wireguard and refresh one of the windows.
